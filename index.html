@@ -1,0 +1,2293 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FORZEPUL · Entrenamiento & Fuerza</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <meta name="theme-color" content="#FFFFFF">
+  <meta name="description" content="Entrenamiento de fuerza inteligente, rutinas personalizadas, calorías por ejercicio y sincronización Garmin.">
+  <style>
+    :root {
+      --bg: #F5F7FA;
+      --card: #FFFFFF;
+      --card-border: #E8ECEF;
+      --tx: #1E232A;
+      --tx-sub: #6C757D;
+      --tx-muted: #9BA3AF;
+      --primary: #FF7200;
+      --primary-hover: #E86400;
+      --primary-light: #FFF2E8;
+      --blue: #0284C7;
+      --blue-light: #E0F2FE;
+      --dark-card: #151922;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 2px 6px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.07);
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    *, *::before, *::after { box-sizing: inherit; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--tx);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.4;
+    }
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 0 90px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Top Navigation (Sworkit Style Header) */
+    .app-header {
+      position: sticky;
+      top: 0;
+      background: #FFFFFF;
+      z-index: 60;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      height: 56px;
+    }
+    .header-logo {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #111827;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-btn {
+      background: transparent;
+      border: 0;
+      padding: 6px;
+      font-size: 19px;
+      color: #4B5563;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Bottom Tab Bar (Sworkit Style) */
+    .bottom-tabs {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 480px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border-top: 1px solid var(--card-border);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      height: calc(64px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      z-index: 80;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+    }
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: transparent;
+      border: 0;
+      color: var(--tx-sub);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 0;
+      transition: color 0.15s;
+    }
+    .tab-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .tab-item.active {
+      color: var(--primary);
+    }
+    .tab-item.active svg {
+      stroke: var(--primary);
+    }
+
+    /* Content Area */
+    .main-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Typography */
+    h1 { font-size: 24px; font-weight: 800; margin: 0; color: #111827; }
+    h2 { font-size: 18px; font-weight: 800; margin: 0; color: #111827; }
+    h3 { font-size: 15px; font-weight: 750; margin: 0; }
+    .subtext { font-size: 13px; color: var(--tx-sub); }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--card-border);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: inherit;
+      border-radius: var(--radius-md);
+      min-height: 48px;
+      padding: 0 18px;
+      font-weight: 750;
+      font-size: 14.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 0;
+      transition: all 0.15s ease;
+      touch-action: manipulation;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary {
+      background: var(--primary);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(255, 114, 0, 0.25);
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline {
+      background: #FFFFFF;
+      border: 1.5px solid var(--card-border);
+      color: #374151;
+    }
+    .btn-outline:hover { border-color: #9CA3AF; }
+    .btn-sm {
+      min-height: 36px;
+      padding: 0 12px;
+      font-size: 12.5px;
+      border-radius: 8px;
+    }
+
+    /* Challenge / Meta Semanal Hero Card (Sworkit Style) */
+    .challenge-card {
+      background: linear-gradient(135deg, #1A2130 0%, #243048 100%);
+      color: #FFFFFF;
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+    .challenge-tag {
+      background: #FFFFFF;
+      color: #111827;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .challenge-card::after {
+      content: '';
+      position: absolute;
+      right: -20px;
+      bottom: -20px;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 24px solid rgba(255, 255, 255, 0.04);
+      pointer-events: none;
+    }
+    .tracker-dots {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+    .tracker-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tracker-dot.done {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* Featured Workout Card (Hero Photo) */
+    .hero-workout-card {
+      border-radius: var(--radius-lg);
+      height: 180px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      color: #FFFFFF;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+      background-size: cover;
+      background-position: center;
+    }
+    .hero-workout-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.78) 100%);
+      z-index: 1;
+    }
+    .hero-workout-card > * { position: relative; z-index: 2; }
+    .badge-rec {
+      background: var(--blue);
+      color: #FFFFFF;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 3px 9px;
+      border-radius: 4px;
+      align-self: flex-start;
+      text-transform: uppercase;
+    }
+
+    /* Basic Categories 2-Col Grid */
+    .basics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .basic-cat-card {
+      height: 130px;
+      border-radius: var(--radius-md);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.15s ease;
+    }
+    .basic-cat-card:active { transform: scale(0.98); }
+    .basic-cat-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.45);
+      z-index: 1;
+    }
+    .basic-cat-title {
+      position: relative;
+      z-index: 2;
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    /* Routine View Detail Header */
+    .detail-hero {
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+      background: #1F2937;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      color: #FFFFFF;
+      background-size: cover;
+      background-position: center;
+    }
+    .detail-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
+      z-index: 1;
+    }
+    .detail-hero > * { position: relative; z-index: 2; }
+
+    /* Exercise item list (Sworkit detail screen) */
+    .ex-list-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      background: #FFFFFF;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--card-border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .ex-list-item:hover { background: #F9FAFB; }
+    .ex-thumb {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #E5E7EB;
+      flex: none;
+    }
+
+    /* Metric Grid (Sworkit Exercise Specs) */
+    .spec-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .spec-box {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    .spec-box .lbl { font-size: 11px; color: var(--tx-sub); font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
+    .spec-box .val { font-size: 14px; font-weight: 800; color: #1E293B; }
+
+    /* Search & Inputs */
+    input[type=search], input[type=text], input[type=number] {
+      font-family: inherit;
+      background: #FFFFFF;
+      border: 1.5px solid #E2E8F0;
+      border-radius: var(--radius-md);
+      height: 48px;
+      padding: 0 16px;
+      font-size: 14.5px;
+      width: 100%;
+      outline: none;
+      color: var(--tx);
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--primary); }
+
+    /* Chips */
+    .chip-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 2px 0;
+    }
+    .chip-scroll::-webkit-scrollbar { display: none; }
+    .chip {
+      background: #FFFFFF;
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 650;
+      color: #4B5563;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .chip.active {
+      background: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+
+    /* Pills */
+    .pill {
+      font-size: 11.5px;
+      font-weight: 750;
+      padding: 3px 9px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .pill-orange { background: var(--primary-light); color: var(--primary); }
+    .pill-blue { background: var(--blue-light); color: var(--blue); }
+
+    /* Sticky Bottom Action Button */
+    .sticky-action-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 480px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border-top: 1px solid var(--card-border);
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+      z-index: 75;
+      display: flex;
+      gap: 10px;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* Live Workout Timer (Clean & Energetic) */
+    .timer-ring-container {
+      position: relative;
+      width: 250px;
+      height: 250px;
+      margin: 12px auto;
+    }
+    .timer-ring-container svg { transform: rotate(-90deg); }
+    .timer-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .timer-clock { font-size: 64px; font-weight: 900; letter-spacing: -2px; line-height: 1; color: #111827; }
+    .timer-tag { font-size: 12px; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-top: 4px; letter-spacing: 1px; }
+
+    /* Calendar Grid (Sworkit Stats Calendar) */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+    .cal-day-header { font-size: 11px; font-weight: 750; color: var(--tx-sub); padding: 4px 0; }
+    .cal-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 650;
+      border-radius: 50%;
+      color: #374151;
+    }
+    .cal-cell.workout-day {
+      background: var(--primary);
+      color: #FFFFFF;
+      font-weight: 800;
+    }
+    .cal-cell.today {
+      border: 2px solid var(--primary);
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/';
+const DATA = BASE + 'dist/exercises.json';
+const IMG = p => BASE + 'exercises/' + encodeURI(p);
+const GR = ["Tren superior", "Tren inferior", "Core", "Cuerpo completo"];
+const EQ = {
+  'body only': 'Sin material (Corporal)', dumbbell: 'Mancuernas', kettlebells: 'Kettlebell',
+  bands: 'Bandas elásticas', barbell: 'Barra', 'e-z curl bar': 'Barra Z',
+  cable: 'Poleas', machine: 'Máquinas', 'medicine ball': 'Balón medicinal', other: 'Otros'
+};
+const ES = {
+  abdominals: 'Abdomen', abductors: 'Abductores', adductors: 'Aductores',
+  biceps: 'Bíceps', calves: 'Gemelos', chest: 'Pecho', forearms: 'Antebrazo',
+  glutes: 'Glúteo', hamstrings: 'Isquios', lats: 'Dorsales', 'lower back': 'Lumbar',
+  'middle back': 'Espalda media', neck: 'Cuello', quadriceps: 'Cuádriceps',
+  shoulders: 'Hombros', traps: 'Trapecio', triceps: 'Tríceps'
+};
+const UP = ['biceps','chest','forearms','lats','middle back','neck','shoulders','traps','triceps'];
+const LO = ['abductors','adductors','calves','glutes','hamstrings','quadriceps'];
+
+// Mapeo Garmin FIT de categorías
+const FITMAP = [
+  [/leg curl/i, 15], [/curl/i, 7], [/bench|chest press/i, 0], [/fly|flye/i, 9],
+  [/shoulder press|overhead press|military/i, 24], [/lateral raise/i, 14],
+  [/pull.?up|chin.?up/i, 21], [/push.?up/i, 22], [/row/i, 23], [/deadlift/i, 8],
+  [/squat/i, 28], [/lunge|split squat/i, 17], [/plank/i, 19], [/crunch/i, 6],
+  [/sit.?up/i, 27], [/leg raise|knee raise/i, 16], [/calf/i, 1],
+  [/triceps|pushdown|skull/i, 30], [/shrug/i, 26], [/hip thrust|bridge|glute/i, 10],
+  [/hyperextension|back extension/i, 13], [/swing/i, 12]
+];
+
+// Rutinas con imágenes de portada atléticas reales
+const DEFAULT_ROUTINES = [
+  {
+    id: 'rt_torso',
+    name: 'Más Fuerte: Torso Hipertrofia',
+    category: 'Fuerza',
+    difficulty: 3,
+    heroImg: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80',
+    rx: 90,
+    exercises: [
+      { id: 'Barbell_Bench_Press_-_Medium_Grip', sets: 4, reps: 8, dur: 40, time: 0, kg: 60, rest: 90 },
+      { id: 'Bent_Over_Barbell_Row', sets: 4, reps: 10, dur: 40, time: 0, kg: 50, rest: 90 },
+      { id: 'Standing_Dumbbell_Shoulder_Press', sets: 3, reps: 10, dur: 35, time: 0, kg: 16, rest: 75 },
+      { id: 'Dumbbell_Bicep_Curl', sets: 3, reps: 12, dur: 30, time: 0, kg: 12, rest: 60 }
+    ]
+  },
+  {
+    id: 'rt_pierna',
+    name: 'Potencia de Piernas y Glúteos',
+    category: 'Fuerza',
+    difficulty: 3,
+    heroImg: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=80',
+    rx: 90,
+    exercises: [
+      { id: 'Barbell_Squat', sets: 4, reps: 8, dur: 45, time: 0, kg: 75, rest: 120 },
+      { id: 'Barbell_Deadlift', sets: 3, reps: 6, dur: 40, time: 0, kg: 90, rest: 120 },
+      { id: 'Dumbbell_Lunges', sets: 3, reps: 12, dur: 45, time: 0, kg: 14, rest: 75 },
+      { id: 'Plank', sets: 3, reps: 1, dur: 45, time: 1, kg: 0, rest: 60 }
+    ]
+  },
+  {
+    id: 'rt_core',
+    name: 'Abdominales y Estabilidad Core',
+    category: 'Core',
+    difficulty: 2,
+    heroImg: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=800&q=80',
+    rx: 60,
+    exercises: [
+      { id: 'Plank', sets: 4, reps: 1, dur: 45, time: 1, kg: 0, rest: 45 },
+      { id: 'Crunches', sets: 3, reps: 20, dur: 40, time: 0, kg: 0, rest: 45 },
+      { id: 'Russian_Twist', sets: 3, reps: 20, dur: 40, time: 0, kg: 5, rest: 45 }
+    ]
+  }
+];
+
+// Estado global de la aplicación
+let EX = [], M = {};
+let S = {
+  view: 'home',         // 'home', 'routines', 'view_routine', 'edit_routine', 'select_ex', 'cat', 'det', 'run', 'done', 'stats'
+  routines: [],
+  activeRoutineId: null,
+  editingRoutine: null,
+  f: 'Todos',
+  q: '',
+  hist: [],
+  det: 0,
+  err: 0,
+  weight: 75,
+  eqs: ['body only', 'dumbbell', 'kettlebells', 'bands', 'barbell', 'cable', 'machine', 'e-z curl bar', 'medicine ball', 'other']
+};
+
+let steps = [], i = 0, end = 0, tot = 0, paused = 0, rem = 0, tm;
+let log = [], t0 = 0, ac, lastS, wl;
+
+// ==========================================
+// SISTEMA DE MÚSICA MP3 (GUARDADO PERMANENTE EN INDEXEDDB)
+// ==========================================
+const DB_NAME = 'forzepul_music_db';
+let musicDB = null;
+let userTracks = [];
+let currentTrackIdx = 0;
+let musicAudio = new Audio();
+musicAudio.volume = 0.8;
+let musicEnabled = true;
+let musicShuffle = false;
+let isMusicManagerOpen = false;
+
+function openDB() {
+  return new Promise(resolve => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('tracks')) {
+        db.createObjectStore('tracks', { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = e => {
+      musicDB = e.target.result;
+      resolve(musicDB);
+    };
+    req.onerror = () => resolve(null);
+  });
+}
+
+function loadSavedTracks() {
+  return new Promise(async resolve => {
+    if (!musicDB) await openDB();
+    if (!musicDB) return resolve();
+    const tx = musicDB.transaction('tracks', 'readonly');
+    const store = tx.objectStore('tracks');
+    const req = store.getAll();
+    req.onsuccess = () => {
+      const list = req.result || [];
+      userTracks = list.map(item => ({
+        id: item.id,
+        name: item.name,
+        blob: item.blob,
+        url: URL.createObjectURL(item.blob)
+      }));
+      resolve();
+    };
+    req.onerror = () => resolve();
+  });
+}
+
+function saveTrackToDB(record) {
+  return new Promise(async resolve => {
+    if (!musicDB) await openDB();
+    if (!musicDB) return resolve();
+    const tx = musicDB.transaction('tracks', 'readwrite');
+    const store = tx.objectStore('tracks');
+    store.put(record);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+  });
+}
+
+function deleteTrackFromDB(id) {
+  return new Promise(async resolve => {
+    if (!musicDB) await openDB();
+    if (!musicDB) return resolve();
+    const tx = musicDB.transaction('tracks', 'readwrite');
+    const store = tx.objectStore('tracks');
+    store.delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+  });
+}
+
+function clearAllTracksFromDB() {
+  return new Promise(async resolve => {
+    if (!musicDB) await openDB();
+    if (!musicDB) return resolve();
+    const tx = musicDB.transaction('tracks', 'readwrite');
+    const store = tx.objectStore('tracks');
+    store.clear();
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => resolve();
+  });
+}
+
+async function handleAudioUpload(input) {
+  if (!input.files || !input.files.length) return;
+  const files = Array.from(input.files);
+  for (const f of files) {
+    const id = 'trk_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    const name = f.name.replace(/\.[^/.]+$/, "");
+    const record = { id, name, size: f.size, type: f.type, blob: f };
+    await saveTrackToDB(record);
+    userTracks.push({
+      id,
+      name,
+      blob: f,
+      url: URL.createObjectURL(f)
+    });
+  }
+  input.value = '';
+  render(1);
+}
+
+async function deleteTrack(id) {
+  await deleteTrackFromDB(id);
+  const idx = userTracks.findIndex(t => t.id === id);
+  if (idx >= 0) {
+    try { URL.revokeObjectURL(userTracks[idx].url); } catch(e){}
+    userTracks.splice(idx, 1);
+  }
+  if (currentTrackIdx >= userTracks.length) currentTrackIdx = 0;
+  render(1);
+}
+
+async function clearAllTracks() {
+  if (!confirm('¿Eliminar todas las canciones subidas?')) return;
+  await clearAllTracksFromDB();
+  userTracks.forEach(t => {
+    try { URL.revokeObjectURL(t.url); } catch(e){}
+  });
+  userTracks = [];
+  currentTrackIdx = 0;
+  pauseWorkoutMusic();
+  render(1);
+}
+
+function openMusicManager() {
+  isMusicManagerOpen = true;
+  render(1);
+}
+
+function closeMusicManager() {
+  isMusicManagerOpen = false;
+  render(1);
+}
+
+function selectTrack(idx) {
+  currentTrackIdx = idx;
+  const track = userTracks[currentTrackIdx];
+  if (track) {
+    musicAudio.src = track.url;
+    if (S.view === 'run' && steps[i] && steps[i].t === 'w' && !paused) {
+      musicAudio.play().catch(()=>{});
+    }
+  }
+  render(1);
+}
+
+function nextTrack() {
+  if (!userTracks.length) return;
+  currentTrackIdx = (currentTrackIdx + 1) % userTracks.length;
+  selectTrack(currentTrackIdx);
+}
+
+function prevTrack() {
+  if (!userTracks.length) return;
+  currentTrackIdx = (currentTrackIdx - 1 + userTracks.length) % userTracks.length;
+  selectTrack(currentTrackIdx);
+}
+
+function playWorkoutMusic() {
+  if (!musicEnabled || !userTracks.length) return;
+  const track = userTracks[currentTrackIdx];
+  if (!track) return;
+  if (musicAudio.src !== track.url) {
+    musicAudio.src = track.url;
+  }
+  musicAudio.play().catch(()=>{});
+}
+
+function pauseWorkoutMusic() {
+  if (musicAudio) {
+    musicAudio.pause();
+  }
+}
+
+function stopWorkoutMusic() {
+  if (musicAudio) {
+    musicAudio.pause();
+    musicAudio.currentTime = 0;
+  }
+}
+
+musicAudio.addEventListener('ended', () => {
+  if (!userTracks.length) return;
+  if (musicShuffle) {
+    currentTrackIdx = Math.floor(Math.random() * userTracks.length);
+  } else {
+    currentTrackIdx = (currentTrackIdx + 1) % userTracks.length;
+  }
+  const track = userTracks[currentTrackIdx];
+  if (track) {
+    musicAudio.src = track.url;
+    if (S.view === 'run' && steps[i] && steps[i].t === 'w' && !paused) {
+      musicAudio.play().catch(()=>{});
+    }
+  }
+  render(1);
+});
+
+function musicModalHtml() {
+  if (!isMusicManagerOpen) return '';
+  return `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:90;display:flex;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeMusicManager()">
+      <div style="background:#FFFFFF;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;max-height:85vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px;box-shadow:0 -6px 20px rgba(0,0,0,0.15)">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <h2 style="font-size:18px">Música para tus Series</h2>
+            <div class="subtext">Suena durante cada ejercicio · Se pausa en descansos</div>
+          </div>
+          <button class="header-btn" onclick="closeMusicManager()" style="font-size:20px">✕</button>
+        </div>
+
+        <label class="btn btn-primary" style="cursor:pointer;width:100%;margin-top:2px">
+          <span>＋ Subir canciones MP3</span>
+          <input type="file" accept="audio/*" multiple style="display:none" onchange="handleAudioUpload(this)">
+        </label>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;background:#F9FAFB;padding:10px 14px;border-radius:12px;border:1px solid var(--card-border)">
+          <div style="font-size:13.5px;font-weight:700">Activar música en ejercicios</div>
+          <input type="checkbox" ${musicEnabled ? 'checked' : ''} onchange="musicEnabled=this.checked; if(!musicEnabled)pauseWorkoutMusic(); else if(S.view==='run'&&steps[i]&&steps[i].t==='w')playWorkoutMusic(); render(1);" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer">
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;background:#F9FAFB;padding:10px 14px;border-radius:12px;border:1px solid var(--card-border)">
+          <div style="font-size:13.5px;font-weight:700">Modo aleatorio (Shuffle)</div>
+          <input type="checkbox" ${musicShuffle ? 'checked' : ''} onchange="musicShuffle=this.checked; render(1);" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer">
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;background:#F9FAFB;padding:10px 14px;border-radius:12px;border:1px solid var(--card-border)">
+          <span style="font-size:14px">🔊</span>
+          <input type="range" min="0" max="1" step="0.05" value="${musicAudio.volume}" oninput="musicAudio.volume=this.value" style="flex:1;accent-color:var(--primary)">
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <h3 style="font-size:14px">Mis Canciones (${userTracks.length})</h3>
+            ${userTracks.length ? `<button style="border:0;background:none;color:#EF4444;font-size:12px;cursor:pointer;font-weight:750" onclick="clearAllTracks()">Borrar todas</button>` : ''}
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${userTracks.length ? userTracks.map((t, idx) => `
+              <div class="card" style="padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-color:${idx === currentTrackIdx ? 'var(--primary)' : 'var(--card-border)'}">
+                <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;cursor:pointer" onclick="selectTrack(${idx})">
+                  <span style="font-size:14px">${idx === currentTrackIdx ? '🎵' : '▶'}</span>
+                  <span style="font-weight:700;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</span>
+                </div>
+                <button class="btn btn-outline btn-sm" style="color:#EF4444;padding:0 8px;min-height:30px" onclick="deleteTrack('${t.id}')">🗑️</button>
+              </div>
+            `).join('') : `
+              <div class="card" style="text-align:center;padding:24px 16px">
+                <div style="font-size:32px;margin-bottom:4px">🎧</div>
+                <div style="font-weight:750;font-size:14px">No has subido canciones aún</div>
+                <div class="subtext" style="margin-top:2px">Sube tus archivos MP3 para motivarte en cada serie.</div>
+              </div>
+            `}
+          </div>
+        </div>
+
+        <button class="btn btn-outline" onclick="closeMusicManager()" style="width:100%;margin-top:4px">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// Cargar almacenamiento persistente
+try {
+  const d = JSON.parse(localStorage.getItem('fz_sworkit_v1') || 'null');
+  if (d) Object.assign(S, d, { view: 'home', editingRoutine: null });
+} catch (e) {}
+
+if (!S.routines || !S.routines.length) {
+  S.routines = JSON.parse(JSON.stringify(DEFAULT_ROUTINES));
+}
+
+const $ = s => document.querySelector(s);
+const fmt = s => Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+
+function save() {
+  try {
+    localStorage.setItem('fz_sworkit_v1', JSON.stringify({
+      routines: S.routines,
+      hist: S.hist,
+      eqs: S.eqs,
+      weight: S.weight || 75
+    }));
+  } catch (e) {}
+}
+
+function go(v, keep) {
+  S.view = v;
+  render(keep);
+}
+
+function render(keep) {
+  const app = $('#app');
+  if (!app) return;
+  const viewMap = {
+    home: vHome,
+    routines: vRoutines,
+    view_routine: vViewRoutine,
+    edit_routine: vEditRoutine,
+    select_ex: vSelectEx,
+    cat: vCatalog,
+    det: vDet,
+    run: vRun,
+    done: vDone,
+    stats: vStats
+  };
+  const fn = viewMap[S.view] || vHome;
+  app.innerHTML = fn() + musicModalHtml();
+  if (S.view === 'select_ex' || S.view === 'cat') listExercises();
+  if (!keep) window.scrollTo(0, 0);
+}
+
+// Carga del catálogo desde GitHub
+async function loadCatalog() {
+  S.err = 0;
+  render();
+  try {
+    const r = await fetch(DATA);
+    if (!r.ok) throw 0;
+    const raw = await r.json();
+    EX = raw.filter(e => e.category !== 'stretching' && e.primaryMuscles && e.primaryMuscles[0]).map(e => {
+      const m = e.primaryMuscles[0];
+      const full = ['cardio', 'plyometrics', 'olympic weightlifting'].includes(e.category);
+      const region = full ? GR[3] : UP.includes(m) ? GR[0] : LO.includes(m) ? GR[1] : GR[2];
+      const f = FITMAP.find(x => x[0].test(e.name));
+      return {
+        id: e.id,
+        name: e.name,
+        muscle: ES[m] || m,
+        region,
+        fit: f ? f[1] : 29,
+        time: /plank|hold|wall sit|hang|isometric/i.test(e.name) ? 1 : 0,
+        img: e.images || [],
+        ins: e.instructions || [],
+        lvl: e.level || 'intermedio',
+        eq: e.equipment || 'body only'
+      };
+    });
+    EX.sort((a, b) => a.name.localeCompare(b.name));
+    M = {};
+    EX.forEach(e => { M[e.id] = e; });
+  } catch (e) {
+    S.err = 1;
+  }
+  render();
+}
+
+function askWeight() {
+  const cur = S.weight || 75;
+  const val = prompt('Tu peso en kg (para calcular calorías exactas):', cur);
+  if (val) {
+    const n = parseFloat(val);
+    if (n > 30 && n < 300) {
+      S.weight = Math.round(n * 10) / 10;
+      save();
+      render(1);
+    }
+  }
+}
+
+// Cálculo fisiológico de calorías por serie y ejercicio
+function getMet(e) {
+  if (!e) return 4.5;
+  if (e.region === GR[3] || e.region === GR[1]) return 5.8;
+  if (e.region === GR[0]) return 4.8;
+  return 3.8;
+}
+
+function calcSetKcal(exerciseId, durSec, kg, restSec) {
+  const e = M[exerciseId];
+  const w = S.weight || 75;
+  const met = getMet(e);
+  const loadMult = 1 + Math.min(1.4, ((kg || 0) / w) * 0.28);
+  const workKcal = (met * loadMult * w * (durSec / 3600));
+  const restKcal = (2.6 * w * ((restSec || 0) / 3600));
+  return +(workKcal + restKcal).toFixed(1);
+}
+
+function estExerciseKcal(exObj) {
+  const dur = exObj.time ? exObj.dur : Math.max(15, exObj.reps * 3.5);
+  const single = calcSetKcal(exObj.id, dur, exObj.kg, exObj.rest);
+  return Math.round(single * exObj.sets);
+}
+
+function estRoutineKcal(routine) {
+  if (!routine || !routine.exercises) return 0;
+  return routine.exercises.reduce((acc, ex) => acc + estExerciseKcal(ex), 0);
+}
+
+function getFlames(diff) {
+  const n = diff || 2;
+  return '🔥'.repeat(n) + '<span style="opacity:0.25">' + '🔥'.repeat(Math.max(0, 3 - n)) + '</span>';
+}
+
+// Top Bar (Sworkit Style)
+function header(title) {
+  return `
+    <header class="app-header">
+      <button class="header-btn" onclick="go('home')" title="Menú">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="header-logo" onclick="go('home')">
+        <span>SWORKIT</span>
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" onclick="openMusicManager()" title="Música para entrenar">
+          <span style="font-size:16px">${userTracks.length ? '🎵' : '🎧'}</span>
+        </button>
+        <button class="header-btn" onclick="askWeight()" title="Tu peso para calorías">
+          <span style="font-size:12px;font-weight:800;background:#F3F4F6;padding:3px 7px;border-radius:6px">${S.weight || 75} kg</span>
+        </button>
+        <button class="header-btn" onclick="go('cat')" title="Buscar ejercicios">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
+      </div>
+    </header>
+  `;
+}
+
+// Bottom Bar (Sworkit Style)
+function bottomTabs(active) {
+  return `
+    <nav class="bottom-tabs">
+      <button class="tab-item ${active === 'home' ? 'active' : ''}" onclick="go('home')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Rutinas</span>
+      </button>
+      <button class="tab-item ${active === 'routines' ? 'active' : ''}" onclick="go('routines')">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span>Mis Rutinas</span>
+      </button>
+      <button class="tab-item ${active === 'cat' ? 'active' : ''}" onclick="go('cat')">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
+        <span>Ejercicios</span>
+      </button>
+      <button class="tab-item ${active === 'stats' ? 'active' : ''}" onclick="go('stats')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        <span>Mi Forzepul</span>
+      </button>
+    </nav>
+  `;
+}
+
+// ==========================================
+// 1. PANTALLA PRINCIPAL: PORTADA (SWORKIT 1 & 2)
+// ==========================================
+function vHome() {
+  const featured = S.routines[0] || DEFAULT_ROUTINES[0];
+  const weeklyWorkouts = S.hist.filter(s => (Date.now() - s.t0) < 7 * 86400000).length;
+
+  return `
+    ${header()}
+
+    <div class="main-content">
+      <!-- 1. Tarjeta Desafío / Meta Semanal (Estilo Sworkit) -->
+      <div class="challenge-card">
+        <span class="challenge-tag">Desafío</span>
+        <div style="font-size:18px;font-weight:800;letter-spacing:-0.3px">META SEMANAL DE SALUD</div>
+        <div class="subtext" style="color:rgba(255,255,255,0.7);margin-top:2px">
+          ${weeklyWorkouts} de 3 entrenamientos completados
+        </div>
+        <div class="tracker-dots">
+          <div class="tracker-dot ${weeklyWorkouts >= 1 ? 'done' : ''}"></div>
+          <div class="tracker-dot ${weeklyWorkouts >= 2 ? 'done' : ''}"></div>
+          <div class="tracker-dot ${weeklyWorkouts >= 3 ? 'done' : ''}"></div>
+          <span style="font-size:12px;color:rgba(255,255,255,0.85);margin-left:6px">¡Sigue así!</span>
+        </div>
+      </div>
+
+      <!-- 2. Sección Más Fuerte / Recomendado para ti -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h2>Más Fuerte</h2>
+          <span style="font-size:13px;color:var(--primary);font-weight:750;cursor:pointer" onclick="go('routines')">Ver todas</span>
+        </div>
+
+        <div class="hero-workout-card" style="background-image:url('${featured.heroImg || DEFAULT_ROUTINES[0].heroImg}')" onclick="viewRoutine('${featured.id}')">
+          <div class="hero-workout-overlay"></div>
+          <span class="badge-rec">Recomendado</span>
+          <div>
+            <div style="font-size:20px;font-weight:800;line-height:1.2">${featured.name}</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:4px">
+              ${featured.exercises.length} ejercicios · 🔥 ~${estRoutineKcal(featured)} kcal
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Categorías Básicos (Fuerza, Aeróbicos) -->
+      <div>
+        <h2>Básicos</h2>
+        <div class="basics-grid" style="margin-top:10px">
+          <div class="basic-cat-card" style="background-image:url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=500&q=80')" onclick="filterBasics('Fuerza')">
+            <div class="basic-cat-overlay"></div>
+            <span class="basic-cat-title">FUERZA</span>
+          </div>
+          <div class="basic-cat-card" style="background-image:url('https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=500&q=80')" onclick="filterBasics('Core')">
+            <div class="basic-cat-overlay"></div>
+            <span class="basic-cat-title">CORE & FIT</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Nuevos Entrenamientos / Colecciones -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h2>Nuevos Entrenamientos</h2>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          ${S.routines.slice(1, 3).map(rt => `
+            <div class="card" style="padding:10px;cursor:pointer" onclick="viewRoutine('${rt.id}')">
+              <div style="height:100px;border-radius:10px;background-size:cover;background-position:center;background-image:url('${rt.heroImg || DEFAULT_ROUTINES[1].heroImg}')"></div>
+              <div style="font-weight:800;font-size:13.5px;margin-top:8px;line-height:1.2">${rt.name}</div>
+              <div class="subtext" style="font-size:11.5px;margin-top:3px">${rt.exercises.length} ejer · 🔥 ~${estRoutineKcal(rt)} kcal</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+
+    ${bottomTabs('home')}
+  `;
+}
+
+function filterBasics(cat) {
+  go('routines');
+}
+
+// ==========================================
+// 2. PANTALLA: MIS RUTINAS (PERSONALIZADAS)
+// ==========================================
+function vRoutines() {
+  const listHtml = S.routines.map(rt => {
+    const kcal = estRoutineKcal(rt);
+    const sets = rt.exercises.reduce((a, x) => a + x.sets, 0);
+
+    return `
+      <div class="card" style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="width:70px;height:70px;border-radius:12px;background-size:cover;background-position:center;background-image:url('${rt.heroImg || DEFAULT_ROUTINES[0].heroImg}');flex:none"></div>
+          <div style="flex:1;min-width:0" onclick="viewRoutine('${rt.id}')" role="button">
+            <h3 style="font-size:16px;line-height:1.2;cursor:pointer">${rt.name}</h3>
+            <div class="subtext" style="margin-top:3px">${rt.exercises.length} ejercicios · ${sets} series</div>
+            <div style="margin-top:4px">
+              <span class="pill pill-orange">🔥 ~${kcal} kcal</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="flex:2;min-height:42px" onclick="startRoutine('${rt.id}')">
+            <span>▶ Iniciar</span>
+          </button>
+          <button class="btn btn-outline" style="flex:1;min-height:42px" onclick="viewRoutine('${rt.id}')">
+            <span>👁️ Ver</span>
+          </button>
+          <button class="btn btn-outline" style="flex:1;min-height:42px" onclick="editRoutine('${rt.id}')">
+            <span>✏️ Editar</span>
+          </button>
+          <button class="btn btn-outline" style="min-height:42px;padding:0 12px;color:#EF4444" onclick="deleteRoutine('${rt.id}')" title="Borrar">
+            🗑️
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    ${header()}
+
+    <div class="main-content">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h1>Rutinas Personalizadas</h1>
+          <div class="subtext">Gestiona, edita o crea tus planes</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="newRoutine()" style="width:100%">
+        <span>＋ Crear Nueva Rutina</span>
+      </button>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        ${listHtml}
+      </div>
+    </div>
+
+    ${bottomTabs('routines')}
+  `;
+}
+
+function newRoutine() {
+  S.editingRoutine = {
+    id: 'rt_' + Date.now(),
+    name: 'Nueva Rutina',
+    difficulty: 2,
+    heroImg: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=80',
+    rx: 90,
+    exercises: []
+  };
+  go('edit_routine');
+}
+
+function editRoutine(id) {
+  const found = S.routines.find(r => r.id === id);
+  if (!found) return;
+  S.editingRoutine = JSON.parse(JSON.stringify(found));
+  go('edit_routine');
+}
+
+function deleteRoutine(id) {
+  const found = S.routines.find(r => r.id === id);
+  if (!found) return;
+  if (confirm(`¿Eliminar la rutina "${found.name}"?`)) {
+    S.routines = S.routines.filter(r => r.id !== id);
+    save();
+    render();
+  }
+}
+
+// ========================================================
+// 3. PANTALLA: VER DETALLE DE RUTINA (SWORKIT SCREEN 3)
+// ========================================================
+function viewRoutine(id) {
+  S.activeRoutineId = id;
+  go('view_routine');
+}
+
+function vViewRoutine() {
+  const rt = S.routines.find(r => r.id === S.activeRoutineId) || DEFAULT_ROUTINES[0];
+  const totalKcal = estRoutineKcal(rt);
+  const totalSets = rt.exercises.reduce((a, x) => a + x.sets, 0);
+
+  const exRows = rt.exercises.map((ex, idx) => {
+    const e = M[ex.id] || { name: ex.id.replace(/_/g, ' '), muscle: '', img: [] };
+    const exKcal = estExerciseKcal(ex);
+    const k = EX.findIndex(x => x.id === ex.id);
+
+    return `
+      <div class="ex-list-item" onclick="${k >= 0 ? `openExerciseDetail(${k})` : ''}">
+        <img class="ex-thumb" src="${e.img && e.img[0] ? IMG(e.img[0]) : ''}" onerror="this.src='icon.svg'">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:750;font-size:14.5px;color:#111827">${e.name}</div>
+          <div class="subtext" style="font-size:12.5px;margin-top:2px">
+            ${ex.sets} series × ${ex.time ? `${ex.dur} s` : `${ex.reps} reps`} ${ex.kg ? `· ${ex.kg} kg` : ''} · ${ex.rest} s rest
+          </div>
+        </div>
+        <div style="text-align:right">
+          <span style="font-size:12px;font-weight:750;color:var(--primary)">🔥 ${exKcal}</span>
+          <span style="display:block;font-size:10px;color:var(--tx-muted)">kcal</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <!-- Top Hero Banner con Foto y Botón Personalizar -->
+    <div class="detail-hero" style="background-image:url('${rt.heroImg || DEFAULT_ROUTINES[0].heroImg}')">
+      <div class="detail-hero-overlay"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <button class="header-btn" style="color:#FFFFFF" onclick="go('home')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div style="display:flex;gap:10px">
+          <button class="header-btn" style="color:#FFFFFF" onclick="editRoutine('${rt.id}')" title="Personalizar">
+            <span style="font-size:12px;font-weight:800;background:rgba(0,0,0,0.5);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.4)">✏️ PERSONALIZAR</span>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:-0.4px">${rt.name}</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:3px">
+          ${rt.exercises.length} ejercicios · ${totalSets} series · 🔥 ~${totalKcal} kcal
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content" style="padding-bottom:100px">
+      <!-- Especificaciones Dificultad y Equipo (Estilo Sworkit) -->
+      <div class="card" style="padding:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;text-align:center">
+          <div style="border-right:1px solid var(--card-border);padding:6px">
+            <div style="font-size:11px;font-weight:750;color:var(--tx-sub);text-transform:uppercase">Dificultad</div>
+            <div style="font-size:16px;margin-top:4px">${getFlames(rt.difficulty || 2)}</div>
+          </div>
+          <div style="padding:6px">
+            <div style="font-size:11px;font-weight:750;color:var(--tx-sub);text-transform:uppercase">Equipo</div>
+            <div style="font-size:14px;font-weight:800;margin-top:4px;color:#1F2937">Mancuernas / Barra</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:13px;font-weight:800;letter-spacing:1px;color:var(--tx-sub);margin-bottom:8px;text-transform:uppercase">
+          EJERCICIOS INCLUIDOS (${rt.exercises.length})
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${exRows || '<div class="card"><div class="subtext">Sin ejercicios. Pulsa en Personalizar.</div></div>'}
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra fija inferior con botón naranja SELECCIONAR ENTRENAMIENTO -->
+    <div class="sticky-action-bar">
+      <button class="btn btn-primary" style="width:100%;font-size:16px;letter-spacing:0.5px" onclick="startRoutine('${rt.id}')">
+        <span>SELECCIONAR ENTRENAMIENTO</span>
+      </button>
+    </div>
+  `;
+}
+
+// ========================================================
+// 4. PANTALLA: EDITAR RUTINA (AÑADIR / QUITAR EJERCICIOS)
+// ========================================================
+function vEditRoutine() {
+  const rt = S.editingRoutine;
+  if (!rt) return vRoutines();
+
+  const totalKcal = estRoutineKcal(rt);
+
+  const exListHtml = rt.exercises.map((ex, idx) => {
+    const e = M[ex.id] || { name: ex.id.replace(/_/g, ' '), muscle: '', img: [] };
+    const exKcal = estExerciseKcal(ex);
+
+    const r = (lbl, key, step, min, unit) => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #F3F4F6">
+        <span style="font-size:13px;color:var(--tx-sub)">${lbl}</span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="btn btn-outline btn-sm" style="width:34px;height:34px;padding:0" onclick="adjEx(${idx}, '${key}', -${step}, ${min})">−</button>
+          <b style="min-width:55px;text-align:center;font-size:14px">${ex[key]}${unit}</b>
+          <button class="btn btn-outline btn-sm" style="width:34px;height:34px;padding:0" onclick="adjEx(${idx}, '${key}', ${step}, ${min})">+</button>
+        </div>
+      </div>
+    `;
+
+    return `
+      <div class="card" style="margin-top:8px">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+          <img class="ex-thumb" src="${e.img && e.img[0] ? IMG(e.img[0]) : ''}">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:750;font-size:14.5px">${e.name}</div>
+            <span class="pill pill-orange" style="margin-top:2px">🔥 ~${exKcal} kcal</span>
+          </div>
+          <button class="btn btn-outline btn-sm" style="color:#EF4444" onclick="removeExFromRoutine(${idx})">✕</button>
+        </div>
+
+        ${r('Series', 'sets', 1, 1, '')}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #F3F4F6">
+          <span style="font-size:13px;color:var(--tx-sub)">Modalidad</span>
+          <div style="display:flex;gap:6px">
+            <button class="btn ${!ex.time ? 'btn-primary' : 'btn-outline'} btn-sm" onclick="setExTimeMode(${idx}, 0)">Reps</button>
+            <button class="btn ${ex.time ? 'btn-primary' : 'btn-outline'} btn-sm" onclick="setExTimeMode(${idx}, 1)">Tiempo</button>
+          </div>
+        </div>
+        ${ex.time ? r('Duración', 'dur', 5, 5, ' s') : r('Repeticiones', 'reps', 1, 1, '')}
+        ${r('Carga / Peso', 'kg', 2.5, 0, ' kg')}
+        ${r('Descanso serie', 'rest', 15, 0, ' s')}
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <header class="app-header">
+      <button class="header-btn" onclick="cancelEdit()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div style="font-weight:800;font-size:16px">PERSONALIZAR RUTINA</div>
+      <button class="header-btn" style="color:var(--primary);font-size:14px;font-weight:800" onclick="saveRoutineAndExit()">
+        GUARDAR
+      </button>
+    </header>
+
+    <div class="main-content" style="padding-bottom:100px">
+      <div class="card">
+        <label style="font-size:12px;font-weight:750;color:var(--tx-sub);display:block;margin-bottom:6px">NOMBRE DE LA RUTINA</label>
+        <input type="text" value="${rt.name.replace(/"/g, '&quot;')}" oninput="S.editingRoutine.name=this.value" placeholder="Nombre...">
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <h2>Ejercicios (${rt.exercises.length})</h2>
+        <span class="pill pill-orange">🔥 ~${totalKcal} kcal</span>
+      </div>
+
+      <button class="btn btn-outline" style="width:100%;border-style:dashed;border-color:var(--primary);color:var(--primary)" onclick="go('select_ex')">
+        <span>＋ Añadir o Quitar Ejercicios del Catálogo</span>
+      </button>
+
+      <div>
+        ${exListHtml || '<div class="card" style="text-align:center;padding:24px"><div class="subtext">Sin ejercicios. Pulsa en Añadir Ejercicios.</div></div>'}
+      </div>
+    </div>
+
+    <div class="sticky-action-bar">
+      <button class="btn btn-outline" style="flex:1" onclick="cancelEdit()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveRoutineAndExit()">
+        <span>Guardar Cambios</span>
+      </button>
+    </div>
+  `;
+}
+
+function cancelEdit() {
+  S.editingRoutine = null;
+  go('routines');
+}
+
+function adjEx(idx, key, d, min) {
+  const ex = S.editingRoutine.exercises[idx];
+  ex[key] = Math.max(min, +(ex[key] + d).toFixed(1));
+  render(1);
+}
+
+function setExTimeMode(idx, t) {
+  S.editingRoutine.exercises[idx].time = t;
+  render(1);
+}
+
+function removeExFromRoutine(idx) {
+  S.editingRoutine.exercises.splice(idx, 1);
+  render(1);
+}
+
+function saveRoutineAndExit() {
+  const rt = S.editingRoutine;
+  if (!rt) return;
+  rt.name = (rt.name || '').trim() || 'Mi Rutina';
+
+  const existingIdx = S.routines.findIndex(r => r.id === rt.id);
+  if (existingIdx >= 0) S.routines[existingIdx] = rt;
+  else S.routines.push(rt);
+
+  save();
+  S.editingRoutine = null;
+  go('routines');
+}
+
+// ========================================================
+// 5. PANTALLA: SELECCIÓN DE EJERCICIOS PARA LA RUTINA
+// ========================================================
+function vSelectEx() {
+  if (!EX.length) loadCatalog();
+
+  const count = S.editingRoutine ? S.editingRoutine.exercises.length : 0;
+
+  return `
+    <header class="app-header">
+      <button class="header-btn" onclick="go('edit_routine', 1)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div style="font-weight:800;font-size:16px">SELECCIONAR EJERCICIOS</div>
+      <button class="header-btn" style="color:var(--primary);font-size:14px;font-weight:800" onclick="go('edit_routine', 1)">
+        LISTO (${count})
+      </button>
+    </header>
+
+    <div class="main-content" style="padding-bottom:100px">
+      <input type="search" placeholder="🔍 Buscar por nombre o músculo…" value="${S.q.replace(/"/g, '&quot;')}" oninput="S.q=this.value;listExercises()">
+
+      <div style="font-size:11px;font-weight:800;color:var(--tx-sub);letter-spacing:0.8px;margin-top:2px;text-transform:uppercase">
+        ZONAS DEL CUERPO
+      </div>
+      <div class="chip-scroll">
+        ${['Todos', ...GR].map(g => `<button class="chip ${S.f === g ? 'active' : ''}" onclick="fltEx('${g}')">${g}</button>`).join('')}
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--tx-sub);letter-spacing:0.8px;text-transform:uppercase">
+          MATERIAL / EQUIPO NECESARIO
+        </div>
+        <button style="border:0;background:none;color:var(--primary);font-size:11px;font-weight:750;padding:0;cursor:pointer" onclick="toggleAllEq()">
+          ${S.eqs.length === Object.keys(EQ).length ? 'Limpiar filtros' : 'Seleccionar todos'}
+        </button>
+      </div>
+      <div class="chip-scroll">
+        ${Object.keys(EQ).map(k => `<button class="chip ${S.eqs.includes(k) ? 'active' : ''}" onclick="tgEq('${k}')">${EQ[k]}</button>`).join('')}
+      </div>
+
+      <div id="exercise_list"></div>
+    </div>
+
+    <div class="sticky-action-bar">
+      <button class="btn btn-primary" style="width:100%" onclick="go('edit_routine', 1)">
+        <span>✓ Listo · ${count} ejercicios seleccionados</span>
+      </button>
+    </div>
+  `;
+}
+
+function fltEx(g) { S.f = g; render(1); }
+
+function tgEq(k) {
+  const j = S.eqs.indexOf(k);
+  if (j >= 0) S.eqs.splice(j, 1);
+  else S.eqs.push(k);
+  save();
+  render(1);
+}
+
+function toggleAllEq() {
+  if (S.eqs.length === Object.keys(EQ).length) S.eqs = [];
+  else S.eqs = Object.keys(EQ);
+  save();
+  render(1);
+}
+
+function listExercises() {
+  const el = $('#exercise_list');
+  if (!el) return;
+  const q = S.q.trim().toLowerCase();
+  let h = '';
+  const currentIds = S.editingRoutine ? S.editingRoutine.exercises.map(x => x.id) : [];
+
+  GR.filter(g => S.f === 'Todos' || S.f === g).forEach(g => {
+    const all = EX.filter(e => e.region === g && (S.eqs.length === 0 || S.eqs.includes(e.eq)) && (!q || e.name.toLowerCase().includes(q) || e.muscle.toLowerCase().includes(q)));
+    if (!all.length) return;
+    const lim = (S.f === 'Todos' && !q) ? 6 : 40;
+
+    h += `
+      <div style="font-size:12px;font-weight:800;color:var(--tx-sub);letter-spacing:1px;margin:12px 0 6px;text-transform:uppercase">
+        ${g} (${all.length})
+      </div>
+      ${all.slice(0, lim).map(e => {
+        const inRoutine = currentIds.includes(e.id);
+        const k = EX.indexOf(e);
+        return `
+          <div class="ex-list-item" style="border-color:${inRoutine ? 'var(--primary)' : 'var(--card-border)'};margin-bottom:6px">
+            <img class="ex-thumb" src="${e.img[0] ? IMG(e.img[0]) : ''}" onerror="this.src='icon.svg'">
+            <div style="flex:1;min-width:0" onclick="openExerciseDetail(${k})">
+              <div style="font-weight:750;font-size:14px">${e.name}</div>
+              <span class="subtext">${e.muscle} · ${EQ[e.eq] || e.eq}</span>
+            </div>
+            <button class="btn ${inRoutine ? 'btn-primary' : 'btn-outline'} btn-sm" onclick="toggleExInRoutine('${e.id}')">
+              ${inRoutine ? '✓ Quitar' : '＋ Añadir'}
+            </button>
+          </div>
+        `;
+      }).join('')}
+    `;
+  });
+
+  el.innerHTML = h || '<div class="card"><div class="subtext">No hay ejercicios con los filtros de material o zona seleccionados.</div></div>';
+}
+
+function toggleExInRoutine(id) {
+  if (!S.editingRoutine) return;
+  const idx = S.editingRoutine.exercises.findIndex(x => x.id === id);
+  if (idx >= 0) {
+    S.editingRoutine.exercises.splice(idx, 1);
+  } else {
+    const e = M[id];
+    S.editingRoutine.exercises.push({
+      id, sets: 3, reps: 10, dur: 40, time: e ? e.time : 0, kg: 0, rest: 60
+    });
+  }
+  listExercises();
+}
+
+// ========================================================
+// 6. PANTALLA: DETALLE DE EJERCICIO (SWORKIT SCREEN 4)
+// ========================================================
+function openExerciseDetail(k) {
+  S.det = k;
+  go('det');
+}
+
+function vDet() {
+  const e = EX[S.det];
+  if (!e) return vHome();
+  const met = getMet(e);
+  const approxKcal = Math.round(met * (S.weight || 75) * (40 / 3600) * 3);
+
+  return `
+    <header class="app-header">
+      <button class="header-btn" onclick="go(S.editingRoutine ? 'select_ex' : 'cat', 1)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <div style="font-weight:800;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px">
+        ${e.name}
+      </div>
+      <div style="width:24px"></div>
+    </header>
+
+    <div class="main-content" style="padding-bottom:100px">
+      <!-- Imagen principal del ejercicio (Estilo esterilla Sworkit) -->
+      <div class="card" style="padding:10px;text-align:center;background:#0F172A">
+        <img src="${e.img[0] ? IMG(e.img[0]) : ''}" onerror="this.src='icon.svg'"
+          style="width:100%;max-height:220px;object-fit:contain;border-radius:10px">
+      </div>
+
+      <!-- Cuadrícula de Especificaciones (Dificultad, Equipo, Impacto, Postura) -->
+      <div class="spec-grid">
+        <div class="spec-box">
+          <div class="lbl">Dificultad</div>
+          <div class="val">${getFlames(e.lvl === 'beginner' ? 1 : e.lvl === 'expert' ? 3 : 2)}</div>
+        </div>
+        <div class="spec-box">
+          <div class="lbl">Equipo</div>
+          <div class="val">${EQ[e.eq] || e.eq}</div>
+        </div>
+        <div class="spec-box">
+          <div class="lbl">Categoría</div>
+          <div class="val">${e.region}</div>
+        </div>
+        <div class="spec-box">
+          <div class="lbl">Gasto Est. (3s)</div>
+          <div class="val" style="color:var(--primary)">🔥 ~${approxKcal} kcal</div>
+        </div>
+      </div>
+
+      <!-- Zonas a Trabajar (Diagrama anatómico) -->
+      <div class="card">
+        <div style="font-size:12px;font-weight:800;color:var(--tx-sub);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">
+          ZONAS A TRABAJAR
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <!-- Silueta SVG de cuerpo anatómico con iluminación cyan -->
+          <svg width="80" height="90" viewBox="0 0 100 120" style="background:#111827;border-radius:10px;padding:6px;flex:none">
+            <circle cx="50" cy="18" r="10" fill="#4B5563"/>
+            <path d="M35 34 L65 34 L60 70 L40 70 Z" fill="#374151"/>
+            <!-- Músculos iluminados en cian según región -->
+            <path d="M42 38 L58 38 L56 52 L44 52 Z" fill="${e.region.includes('superior') ? '#38BDF8' : '#4B5563'}"/>
+            <path d="M44 54 L56 54 L55 68 L45 68 Z" fill="${e.muscle.includes('Abdomen') ? '#38BDF8' : '#4B5563'}"/>
+            <path d="M38 72 L48 112 L42 112 L34 72 Z" fill="${e.region.includes('inferior') ? '#38BDF8' : '#4B5563'}"/>
+            <path d="M62 72 L52 112 L58 112 L66 72 Z" fill="${e.region.includes('inferior') ? '#38BDF8' : '#4B5563'}"/>
+          </svg>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:#111827">${e.muscle}</div>
+            <div class="subtext" style="margin-top:2px">Músculo principal enfocado en este movimiento.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instrucciones paso a paso -->
+      <div class="card">
+        <div style="font-size:12px;font-weight:800;color:var(--tx-sub);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">
+          CÓMO EJECUTAR EL MOVIMIENTO
+        </div>
+        ${e.ins.length ? `<ol style="margin:0;padding-left:18px;line-height:1.5;color:#374151;font-size:13.5px">${e.ins.map(x=>`<li style="margin-bottom:6px">${x}</li>`).join('')}</ol>` : '<div class="subtext">Técnica estándar.</div>'}
+      </div>
+    </div>
+
+    ${S.editingRoutine ? `
+      <div class="sticky-action-bar">
+        <button class="btn btn-primary" style="width:100%" onclick="toggleExInRoutine('${e.id}'); go('select_ex', 1)">
+          <span>${S.editingRoutine.exercises.some(x=>x.id===e.id) ? '✓ Quitar de la rutina' : '＋ Añadir a la rutina'}</span>
+        </button>
+      </div>
+    ` : ''}
+  `;
+}
+
+// ========================================================
+// 7. PANTALLA: CATÁLOGO LIBRE (SWORKIT EJERCICIOS)
+// ========================================================
+function vCatalog() {
+  if (!EX.length) loadCatalog();
+
+  return `
+    ${header()}
+
+    <div class="main-content">
+      <div>
+        <h1>Catálogo de Ejercicios</h1>
+        <div class="subtext">Explora técnica y músculos involucrados</div>
+      </div>
+
+      <input type="search" placeholder="🔍 Buscar por nombre o músculo…" value="${S.q.replace(/"/g, '&quot;')}" oninput="S.q=this.value;listCatalog()">
+
+      <div style="font-size:11px;font-weight:800;color:var(--tx-sub);letter-spacing:0.8px;margin-top:2px;text-transform:uppercase">
+        ZONAS DEL CUERPO
+      </div>
+      <div class="chip-scroll">
+        ${['Todos', ...GR].map(g => `<button class="chip ${S.f === g ? 'active' : ''}" onclick="fltCat('${g}')">${g}</button>`).join('')}
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <div style="font-size:11px;font-weight:800;color:var(--tx-sub);letter-spacing:0.8px;text-transform:uppercase">
+          MATERIAL / EQUIPO NECESARIO
+        </div>
+        <button style="border:0;background:none;color:var(--primary);font-size:11px;font-weight:750;padding:0;cursor:pointer" onclick="toggleAllEq()">
+          ${S.eqs.length === Object.keys(EQ).length ? 'Limpiar filtros' : 'Seleccionar todos'}
+        </button>
+      </div>
+      <div class="chip-scroll">
+        ${Object.keys(EQ).map(k => `<button class="chip ${S.eqs.includes(k) ? 'active' : ''}" onclick="tgEq('${k}')">${EQ[k]}</button>`).join('')}
+      </div>
+
+      <div id="cat_list"></div>
+    </div>
+
+    ${bottomTabs('cat')}
+  `;
+}
+
+function fltCat(g) { S.f = g; render(1); }
+
+function listCatalog() {
+  const el = $('#cat_list');
+  if (!el) return;
+  const q = S.q.trim().toLowerCase();
+  let h = '';
+
+  GR.filter(g => S.f === 'Todos' || S.f === g).forEach(g => {
+    const all = EX.filter(e => e.region === g && (S.eqs.length === 0 || S.eqs.includes(e.eq)) && (!q || e.name.toLowerCase().includes(q) || e.muscle.toLowerCase().includes(q)));
+    if (!all.length) return;
+    const lim = (S.f === 'Todos' && !q) ? 8 : 40;
+
+    h += `
+      <div style="font-size:12px;font-weight:800;color:var(--tx-sub);letter-spacing:1px;margin:12px 0 6px;text-transform:uppercase">
+        ${g} (${all.length})
+      </div>
+      ${all.slice(0, lim).map(e => {
+        const k = EX.indexOf(e);
+        return `
+          <div class="ex-list-item" style="margin-bottom:6px" onclick="openExerciseDetail(${k})">
+            <img class="ex-thumb" src="${e.img[0] ? IMG(e.img[0]) : ''}" onerror="this.src='icon.svg'">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:750;font-size:14px">${e.name}</div>
+              <span class="subtext">${e.muscle} · ${EQ[e.eq] || e.eq}</span>
+            </div>
+            <span style="font-size:12px;color:var(--primary);font-weight:800">Ver técnica →</span>
+          </div>
+        `;
+      }).join('')}
+    `;
+  });
+
+  el.innerHTML = h || '<div class="card"><div class="subtext">No hay ejercicios con los filtros de material o zona seleccionados.</div></div>';
+}
+
+// ========================================================
+// 8. PANTALLA: MI FORZEPUL (ESTADÍSTICAS & CALENDARIO - SWORKIT 5)
+// ========================================================
+function vStats() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthName = now.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+
+  const totalMin = S.hist.reduce((acc, s) => acc + Math.round((s.end - s.t0) / 60000), 0);
+  const totalKcal = S.hist.reduce((acc, s) => acc + (s.cal || 0), 0);
+  const totalVol = S.hist.reduce((acc, s) => acc + s.log.reduce((a, x) => a + (x.reps||0)*(x.kg||0), 0), 0);
+
+  // Días entrenados en el mes
+  const workoutDays = new Set(S.hist.map(s => new Date(s.t0).getDate()));
+
+  // Generar calendario mensual
+  const firstDay = new Date(year, month, 1).getDay(); // 0 = domingo
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const offset = (firstDay + 6) % 7; // Lunes primer día
+
+  let calCells = '';
+  for (let i = 0; i < offset; i++) calCells += '<div></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isWk = workoutDays.has(d);
+    const isToday = d === now.getDate();
+    calCells += `
+      <div class="cal-cell ${isWk ? 'workout-day' : ''} ${isToday ? 'today' : ''}">
+        ${d}
+      </div>
+    `;
+  }
+
+  return `
+    ${header()}
+
+    <div class="main-content">
+      <div>
+        <h1 style="text-transform:uppercase">${monthName} ESTADÍSTICAS</h1>
+        <div class="subtext">Tu registro de actividad y calendario de fuerza</div>
+      </div>
+
+      <!-- Resumen KPIs -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="card" style="text-align:center;padding:12px 8px">
+          <div style="font-size:11px;font-weight:750;color:var(--tx-sub)">CALORÍAS</div>
+          <div style="font-size:19px;font-weight:900;color:var(--primary);margin-top:2px">🔥 ${totalKcal}</div>
+        </div>
+        <div class="card" style="text-align:center;padding:12px 8px">
+          <div style="font-size:11px;font-weight:750;color:var(--tx-sub)">TIEMPO</div>
+          <div style="font-size:19px;font-weight:900;color:#111827;margin-top:2px">${totalMin} min</div>
+        </div>
+        <div class="card" style="text-align:center;padding:12px 8px">
+          <div style="font-size:11px;font-weight:750;color:var(--tx-sub)">VOLUMEN</div>
+          <div style="font-size:19px;font-weight:900;color:#111827;margin-top:2px">${totalVol} kg</div>
+        </div>
+      </div>
+
+      <!-- Calendario de Actividades (Sworkit Pantalla 5) -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h2 style="font-size:16px;text-transform:uppercase">CALENDARIO DE ACTIVIDADES</h2>
+          <span class="pill pill-orange">${workoutDays.size} días activos</span>
+        </div>
+
+        <div style="text-align:center;font-weight:800;font-size:14px;margin-bottom:8px;text-transform:capitalize">
+          ${monthName}
+        </div>
+
+        <div class="cal-grid">
+          <div class="cal-day-header">l</div>
+          <div class="cal-day-header">m</div>
+          <div class="cal-day-header">x</div>
+          <div class="cal-day-header">j</div>
+          <div class="cal-day-header">v</div>
+          <div class="cal-day-header">s</div>
+          <div class="cal-day-header">d</div>
+          ${calCells}
+        </div>
+      </div>
+
+      <!-- Historial de sesiones y exportar .FIT -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h2>Sesiones Recientes</h2>
+          ${S.hist.length ? `<span class="subtext">${S.hist.length} registradas</span>` : ''}
+        </div>
+        ${S.hist.length ? S.hist.map((s, k) => `
+          <div class="card" style="margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+              <div style="flex:1;min-width:0">
+                <b style="font-size:15px;color:#111827;display:block">${s.routineName || 'Entrenamiento'}</b>
+                <div class="subtext">${new Date(s.t0).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })} · ${Math.round((s.end-s.t0)/60000)} min · ${s.log.length} series</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex:none">
+                <span style="font-size:15px;font-weight:800;color:var(--primary)">🔥 ${s.cal || 0} kcal</span>
+                <button class="btn btn-outline btn-sm" style="color:#EF4444;padding:0 9px;min-height:32px" onclick="deleteHistoryItem(${k})" title="Eliminar del historial">
+                  🗑️
+                </button>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn btn-outline btn-sm" style="flex:1" onclick="exp(${k})">
+                <span>💾 Exportar archivo .FIT (Garmin)</span>
+              </button>
+            </div>
+          </div>
+        `).join('') : '<div class="card"><div class="subtext">Aún no hay entrenamientos registrados.</div></div>'}
+      </div>
+    </div>
+
+    ${bottomTabs('stats')}
+  `;
+}
+
+function deleteHistoryItem(k) {
+  const item = S.hist[k];
+  if (!item) return;
+  const name = item.routineName || 'este entrenamiento';
+  const dateStr = new Date(item.t0).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+  if (confirm(`¿Eliminar del historial el entrenamiento "${name}" del ${dateStr}?`)) {
+    S.hist.splice(k, 1);
+    save();
+    render();
+  }
+}
+
+// ========================================================
+// 9. MOTOR DE ENTRENAMIENTO EN VIVO (RUN WORKOUT)
+// ========================================================
+let activeWorkoutRoutine = null;
+
+function startRoutine(id) {
+  const rt = S.routines.find(r => r.id === id);
+  if (!rt || !rt.exercises.length) {
+    alert('Esta rutina no tiene ejercicios. Añade ejercicios editándola.');
+    return;
+  }
+  activeWorkoutRoutine = rt;
+  steps = [];
+
+  rt.exercises.forEach((ex, k) => {
+    for (let s = 1; s <= ex.sets; s++) {
+      steps.push({ t: 'w', ex, s });
+      const last = (k === rt.exercises.length - 1 && s === ex.sets);
+      if (!last) {
+        const nx = s < ex.sets ? ex : rt.exercises[k + 1];
+        steps.push({
+          t: 'r',
+          sec: s < ex.sets ? ex.rest : (rt.rx || 90),
+          ex: nx,
+          s: s < ex.sets ? s + 1 : 1
+        });
+      }
+    }
+  });
+
+  i = -1;
+  log = [];
+  t0 = Date.now();
+  try { ac = ac || new AudioContext(); } catch (e) {}
+  wake();
+  S.view = 'run';
+  nxt();
+}
+
+function beep(f, d) {
+  try {
+    ac = ac || new AudioContext();
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.frequency.value = f;
+    g.gain.value = 0.25;
+    o.connect(g);
+    g.connect(ac.destination);
+    o.start();
+    o.stop(ac.currentTime + d);
+  } catch (e) {}
+}
+
+async function wake() {
+  try {
+    if ('wakeLock' in navigator) wl = await navigator.wakeLock.request('screen');
+  } catch (e) {}
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && S.view === 'run') wake();
+});
+
+function nxt() {
+  i++;
+  if (i >= steps.length) return fin();
+  const st = steps[i];
+  st.t0 = Date.now();
+  const ex = st.ex;
+
+  if (st.t === 'r' || ex.time) {
+    const s = st.t === 'r' ? st.sec : ex.dur;
+    tot = Math.max(1, s) * 1000;
+    end = Date.now() + tot;
+  } else {
+    end = 0;
+  }
+
+  // Reproducir música sólo durante el ejercicio (st.t === 'w'), pausar en descanso (st.t === 'r')
+  if (st.t === 'w') {
+    playWorkoutMusic();
+  } else {
+    pauseWorkoutMusic();
+  }
+
+  paused = 0;
+  lastS = 0;
+  render();
+  clearInterval(tm);
+  tm = setInterval(tick, 200);
+}
+
+function tick() {
+  if (paused) return;
+  const st = steps[i];
+  const clk = $('#clk');
+  if (!clk) return;
+
+  if (!end) {
+    clk.textContent = fmt(Math.floor((Date.now() - st.t0) / 1000));
+    return;
+  }
+
+  const r = Math.max(0, end - Date.now());
+  const s = Math.ceil(r / 1000);
+  clk.textContent = fmt(s);
+
+  const rg = $('#rg');
+  if (rg) rg.setAttribute('stroke-dashoffset', 628.3 * (1 - r / tot));
+
+  if (s !== lastS) {
+    lastS = s;
+    if (s >= 1 && s <= 3) {
+      beep(880, 0.12);
+      if (navigator.vibrate) navigator.vibrate(40);
+    }
+  }
+
+  if (r <= 0) done();
+}
+
+function done() {
+  const st = steps[i];
+  if (st.t === 'w') {
+    const ex = st.ex;
+    const durSec = ex.time ? ex.dur : Math.max(12, Math.round((Date.now() - st.t0) / 1000));
+    const setCal = calcSetKcal(ex.id, durSec, ex.kg, ex.rest);
+    log.push({
+      id: ex.id,
+      reps: ex.time ? 0 : ex.reps,
+      dur: durSec,
+      kg: ex.kg,
+      cal: setCal,
+      t: st.t0
+    });
+  }
+
+  beep(1320, 0.35);
+  if (navigator.vibrate) navigator.vibrate([180, 80, 180]);
+  nxt();
+}
+
+function skip() {
+  if (steps[i].t === 'w') done();
+  else nxt();
+}
+
+function more() {
+  end += 15000;
+  tot += 15000;
+}
+
+function pause() {
+  if (paused) {
+    end = end ? Date.now() + rem : 0;
+    paused = 0;
+    // Si estamos en un set de ejercicio ('w'), reanudar música
+    if (steps[i] && steps[i].t === 'w') {
+      playWorkoutMusic();
+    }
+  } else {
+    rem = end ? end - Date.now() : 0;
+    paused = 1;
+    pauseWorkoutMusic();
+  }
+  const btn = $('#pz');
+  if (btn) btn.textContent = paused ? 'Reanudar' : 'Pausar';
+}
+
+function fin() {
+  clearInterval(tm);
+  try { if (wl) wl.release(); } catch (e) {}
+  stopWorkoutMusic();
+
+  if (log.length) {
+    const totalCal = Math.round(log.reduce((a, x) => a + (x.cal || 0), 0));
+    S.hist.unshift({
+      routineName: activeWorkoutRoutine ? activeWorkoutRoutine.name : 'Entrenamiento',
+      t0,
+      end: Date.now(),
+      log,
+      cal: totalCal,
+      weight: S.weight || 75
+    });
+    S.hist.length = Math.min(S.hist.length, 50);
+    save();
+  }
+  S.view = 'done';
+  render();
+}
+
+function vRun() {
+  const st = steps[i];
+  const ex = st.ex;
+  const e = M[ex.id] || { name: ex.id.replace(/_/g, ' '), muscle: '' };
+  const isRest = st.t === 'r';
+  const n = steps.slice(0, i + 1).filter(x => x.t === 'w').length;
+  const W = steps.filter(x => x.t === 'w').length;
+  const currentKcal = Math.round(log.reduce((a, x) => a + (x.cal || 0), 0));
+
+  return `
+    <header class="app-header">
+      <div style="font-size:13px;font-weight:750;color:var(--tx-sub)">${isRest ? 'DESCANSO' : `Serie ${n} de ${W}`}</div>
+      <span class="pill pill-orange">🔥 ${currentKcal} kcal</span>
+    </header>
+
+    <div class="main-content" style="padding-bottom:120px;text-align:center">
+      <div style="font-size:24px;font-weight:900;color:${isRest ? 'var(--blue)' : '#111827'};margin-top:6px">
+        ${isRest ? 'RECUPERACIÓN' : e.name}
+      </div>
+      <div class="subtext">${isRest ? 'Respira profundo' : e.muscle}</div>
+
+      <!-- Temporizador Circular Limpio (Sworkit Style) -->
+      <div class="timer-ring-container">
+        <svg width="250" height="250">
+          <circle cx="125" cy="125" r="100" fill="none" stroke="#E5E7EB" stroke-width="12"/>
+          <circle id="rg" cx="125" cy="125" r="100" fill="none"
+            stroke="${isRest ? 'var(--blue)' : 'var(--primary)'}"
+            stroke-width="12" stroke-linecap="round"
+            stroke-dasharray="628.3" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-center">
+          <div class="timer-clock" id="clk">${end ? fmt(Math.ceil((end - Date.now()) / 1000)) : '0:00'}</div>
+          <div class="timer-tag">${isRest ? 'Descanso' : (ex.time ? 'Tiempo' : 'Trabajo')}</div>
+        </div>
+      </div>
+
+      <div class="card" style="display:flex;align-items:center;gap:12px;text-align:left">
+        <img class="ex-thumb" src="${e.img && e.img[0] ? IMG(e.img[0]) : ''}">
+        <div>
+          <b style="font-size:15px;display:block">${e.name}</b>
+          <div style="font-size:14px;color:var(--primary);font-weight:800;margin-top:2px">
+            ${isRest ? `Siguiente: Serie ${st.s}` : (ex.time ? `${ex.dur} s` : `${ex.reps} repeticiones`) + (ex.kg ? ` · ${ex.kg} kg` : '')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Widget de Música MP3 -->
+      <div class="card" style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;background:#F9FAFB">
+        <div style="display:flex;align-items:center;gap:10px;overflow:hidden;flex:1;text-align:left">
+          <div style="font-size:18px">${userTracks.length ? (isRest ? '⏸️' : '🎵') : '🎧'}</div>
+          <div style="min-width:0;flex:1">
+            <div style="font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${userTracks.length && userTracks[currentTrackIdx] ? userTracks[currentTrackIdx].name : 'Sin pistas MP3 cargadas'}
+            </div>
+            <div style="font-size:11px;color:var(--tx-sub);font-weight:600">
+              ${userTracks.length ? (isRest ? 'En pausa durante descanso' : 'Reproduciendo en serie') : 'Toca 🎵 para subir tu música'}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px">
+          ${userTracks.length > 1 ? `
+            <button class="btn btn-sm btn-outline" style="padding:4px 8px" onclick="prevTrack()" title="Anterior">⏮</button>
+            <button class="btn btn-sm btn-outline" style="padding:4px 8px" onclick="nextTrack()" title="Siguiente">⏭</button>
+          ` : ''}
+          <button class="btn btn-sm btn-outline" style="padding:4px 8px" onclick="openMusicManager()" title="Gestionar música">⚙️</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sticky-action-bar" style="flex-wrap:wrap">
+      ${isRest ? '<button class="btn btn-outline" style="flex:1" onclick="more()">+15 s descanso</button>' : ''}
+      <button class="btn btn-primary" style="flex:1" onclick="skip()">
+        ${!isRest && !ex.time ? '✓ Serie completada' : 'Saltar'}
+      </button>
+      <button id="pz" class="btn btn-outline" style="flex:1" onclick="pause()">
+        Pausar
+      </button>
+      <button style="flex-basis:100%;border:0;background:none;color:var(--tx-muted);font-size:12.5px" onclick="if(confirm('¿Finalizar entrenamiento?')) fin()">
+        Finalizar entrenamiento
+      </button>
+    </div>
+  `;
+}
+
+// ========================================================
+// 10. RESUMEN FINAL Y EXPORTACIÓN .FIT (GARMIN)
+// ========================================================
+function vDone() {
+  const s = S.hist[0];
+  if (!s) return '<h1>Sin datos</h1><button class="btn btn-primary" onclick="go(\'home\')">Volver</button>';
+
+  const m = Math.round((s.end - s.t0) / 60000) || 1;
+  const v = s.log.reduce((a, x) => a + (x.reps || 0) * (x.kg || 0), 0);
+  const cal = s.cal || Math.round(s.log.reduce((a, x) => a + (x.cal || 0), 0));
+
+  return `
+    <header class="app-header">
+      <div style="font-weight:800;font-size:16px">RESUMEN DEL ENTRENAMIENTO</div>
+    </header>
+
+    <div class="main-content" style="padding-bottom:120px">
+      <div style="text-align:center;padding:12px 0">
+        <div style="font-size:52px">🏆</div>
+        <h1 style="margin-top:6px">¡Entrenamiento Finalizado!</h1>
+        <div class="subtext">${s.routineName}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="card" style="text-align:center">
+          <div style="font-size:11px;font-weight:750;color:var(--tx-sub)">CALORÍAS</div>
+          <div style="font-size:22px;font-weight:900;color:var(--primary)">🔥 ${cal} kcal</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:11px;font-weight:750;color:var(--tx-sub)">DURACIÓN</div>
+          <div style="font-size:22px;font-weight:900">${m} min</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:11px;font-weight:750;color:var(--tx-sub)">VOLUMEN</div>
+          <div style="font-size:22px;font-weight:900">${v} kg</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div style="font-size:11px;font-weight:750;color:var(--tx-sub)">SERIES</div>
+          <div style="font-size:22px;font-weight:900">${s.log.length}</div>
+        </div>
+      </div>
+
+      <!-- Desglose por ejercicio -->
+      <div class="card">
+        <div style="font-size:12px;font-weight:800;color:var(--tx-sub);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">
+          CALORÍAS POR EJERCICIO
+        </div>
+        ${s.log.map(x => {
+          const e = M[x.id] || { name: x.id.replace(/_/g, ' ') };
+          return `
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F3F4F6">
+              <div>
+                <b style="font-size:14px;color:#111827">${e.name}</b>
+                <div class="subtext">${x.reps ? `${x.reps} reps` : `${x.dur} s`} ${x.kg ? `· ${x.kg} kg` : ''}</div>
+              </div>
+              <span style="font-weight:800;color:var(--primary)">🔥 ${x.cal} kcal</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="sticky-action-bar" style="flex-direction:column">
+      <button class="btn btn-primary" onclick="exp(0)">
+        <span>1. Exportar archivo .FIT (con calorías)</span>
+      </button>
+      <a href="https://connect.garmin.com/modern/import-data" target="_blank" rel="noopener" class="btn btn-outline" style="text-decoration:none">
+        2. Abrir Garmin Connect Web ↗
+      </a>
+      <button class="btn btn-outline" onclick="go('home')">Volver al Inicio</button>
+    </div>
+  `;
+}
+
+// Exportación binaria Garmin .FIT
+function fit(s) {
+  const b = [];
+  const u8 = v => b.push(v & 255);
+  const u16 = v => { u8(v); u8(v >> 8); };
+  const u32 = v => { u16(v & 65535); u16(v >>> 16); };
+  const T = ms => Math.floor(ms / 1000) - 631065600;
+
+  const def = (l, n, f) => {
+    u8(64 | l); u8(0); u8(0); u16(n); u8(f.length);
+    f.forEach(x => { u8(x[0]); u8(x[1]); u8(x[2]); });
+  };
+
+  def(0, 0, [[0, 1, 0], [1, 2, 0x84], [4, 4, 0x86]]);
+  u8(0); u8(4); u16(255); u32(T(s.t0));
+
+  def(1, 225, [[253, 4, 0x86], [0, 4, 0x86], [3, 2, 0x84], [4, 2, 0x84], [6, 4, 0x86], [7, 2, 0x84], [5, 1, 2], [10, 2, 0x84]]);
+  s.log.forEach((x, k) => {
+    u8(1); u32(T(x.t + x.dur * 1000)); u32(x.dur * 1000); u16(x.reps);
+    u16(Math.round(x.kg * 16)); u32(T(x.t)); u16(M[x.id] ? M[x.id].fit : 29);
+    u8(1); u16(k);
+  });
+
+  const el = s.end - s.t0;
+  const totKcal = s.cal || Math.round(s.log.reduce((a, x) => a + (x.cal || 0), 0));
+
+  def(2, 18, [
+    [253, 4, 0x86], [2, 4, 0x86], [7, 4, 0x86], [8, 4, 0x86],
+    [11, 2, 0x84], [5, 1, 0], [6, 1, 0]
+  ]);
+  u8(2); u32(T(s.end)); u32(T(s.t0)); u32(el); u32(el); u16(totKcal); u8(10); u8(20);
+
+  def(3, 34, [[253, 4, 0x86], [0, 4, 0x86], [1, 2, 0x84], [2, 1, 0], [3, 1, 0], [4, 1, 0]]);
+  u8(3); u32(T(s.end)); u32(el); u16(1); u8(0); u8(26); u8(1);
+
+  const crc = a => {
+    let c = 0;
+    const t = [0, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401, 0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400];
+    for (const x of a) {
+      let v = t[c & 15]; c = (c >> 4) & 0xFFF; c ^= v ^ t[x & 15];
+      v = t[c & 15]; c = (c >> 4) & 0xFFF; c ^= v ^ t[(x >> 4) & 15];
+    }
+    return c;
+  };
+
+  const h = [14, 0x20, 2000 & 255, 2000 >> 8, b.length & 255, (b.length >> 8) & 255, 0, 0, 46, 70, 73, 84, 0, 0];
+  const all = [...h, ...b];
+  const c = crc(all);
+  return new Uint8Array([...all, c & 255, c >> 8]);
+}
+
+async function exp(k) {
+  const s = S.hist[k];
+  const d = fit(s);
+  const name = 'forzepul-' + new Date(s.t0).toISOString().slice(0, 10) + '.fit';
+  const f = new File([d], name, { type: 'application/octet-stream' });
+
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [f] })) {
+      await navigator.share({ files: [f], title: 'Entrenamiento Forzepul' });
+      return;
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') return;
+  }
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(f);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+loadCatalog();
+loadSavedTracks();
+</script>
+</body>
+</html>

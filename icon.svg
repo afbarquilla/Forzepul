@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141824"/>
+      <stop offset="100%" stop-color="#0B0E14"/>
+    </linearGradient>
+    <linearGradient id="neon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#CCFF00"/>
+      <stop offset="100%" stop-color="#9DE500"/>
+    </linearGradient>
+    <linearGradient id="fire" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF4500"/>
+      <stop offset="100%" stop-color="#FF8C00"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="#222938" stroke-width="6"/>
+  <!-- Barra de mancuerna/fuerza -->
+  <path d="M120 256 L392 256" stroke="url(#neon)" stroke-width="26" stroke-linecap="round"/>
+  <!-- Discos de peso -->
+  <rect x="160" y="186" width="30" height="140" rx="10" fill="url(#neon)"/>
+  <rect x="120" y="206" width="24" height="100" rx="8" fill="#CCFF00" opacity="0.8"/>
+  <rect x="322" y="186" width="30" height="140" rx="10" fill="url(#neon)"/>
+  <rect x="368" y="206" width="24" height="100" rx="8" fill="#CCFF00" opacity="0.8"/>
+  <!-- Llama de calorías superpuesta estilizada -->
+  <path d="M256 160 C265 190 286 205 286 230 C286 248 272 262 256 262 C240 262 226 248 226 230 C226 212 238 198 256 160 Z" fill="url(#fire)"/>
+</svg>
